@@ -1,15 +1,29 @@
 import 'reflect-metadata';
 import { fastify } from 'fastify';
+import fastifyPlugin from 'fastify-plugin';
+import fastifyJWT from 'fastify-jwt';
+// import helmet from '@fastify/helmet';
+import cors from '@fastify/cors';
 import { dataSource } from './src/utils/database/data-source';
 import { UserRoutes } from "./src/routes/UserRoute";
 
 const server = fastify({ logger: true });
+
+// server.register(helmet);
+// server.register(
+//     helmet,
+//     // Example disables the `contentSecurityPolicy` middleware but keeps the rest.
+//     { contentSecurityPolicy: false }
+// )
+server.register(cors, { origin: true });
 
 server.register(require('fastify-typeorm-plugin'), {
     connection: dataSource.options
 });
 
 
+
+  
 
 // Routes
 

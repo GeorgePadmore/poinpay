@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 
 @Entity()
 export class User {
@@ -8,13 +9,17 @@ export class User {
     @Column()
     name: string;
 
-    @Column()
+    @Column({ unique: true })
+    @IsNotEmpty()
+    @Length(4, 20)
     username: string;
 
-    @Column()
+    @Column({ unique: true })
+    @IsEmail()
     email: string;
 
     @Column()
+    @IsNotEmpty()
     password: string;
 
     @Column({name: 'email_verified', default: null, nullable: true})
