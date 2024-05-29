@@ -1,23 +1,46 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
-import UserService from "../services/UserService";
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { UserService } from "../services/UserService";
+import { SUCCESS, FAILURE, USER_CREATION_FAILED, EMAIL_VERIFY_FAILED } from "../utils/constant";
 
 export class UserController {
     
     constructor(private readonly userService: UserService) {}
 
-    async registerUser(request: FastifyRequest, reply: FastifyReply ):Promise<any> {
-        const { username, email, password } = request.body as {username: string, email: string, password: string};
+    async registerUser(request: FastifyRequest, reply: FastifyReply, fastify: FastifyInstance):Promise<any> {
+        const { name, username, email, password } = request.body as {name: string, username: string, email: string, password: string};
         try {
-          const user = await this.userService.createUser(username, email, password);
-          reply.status(201).send(user);
+
+          const response = await this.userService.registerUser({name: name.trim(), username: username.trim(), email: email.trim(), password }, fastify);
+          reply.send(response);
+
         } catch (error) {
-          reply.status(400).send({ error: 'Could not create user' });
+          console.log(error);
+          reply.status(400).send(USER_CREATION_FAILED);
         }
     }
 
 
-    async getUsers(request: FastifyRequest, reply: FastifyReply): Promise<any> {
-        const users = await this.userService.getUsers();
-        reply.status(201).send(users);
+    async verifyEmail(request: FastifyRequest, reply: FastifyReply, fastify: FastifyInstance){
+      const { token } = request.query as {token: string};
+      try {
+        const response = await this.userService.verifyEmail(token, fastify);
+        reply.send(response);
+      } catch (error) {
+        reply.status(400).send(EMAIL_VERIFY_FAILED);
+      }
     }
+
+    
+    /*
+    async authenticateUser(request: FastifyRequest, reply: FastifyReply):Promise<any> {
+        const { username, password } = request.body as {username: string, password: string};
+        try {
+          return await this.userService.createUser(username, password);
+        } catch (error) {
+          reply.status(400).send({ error: 'Could not create user' });
+        }
+    }
+    */
+
+
 }

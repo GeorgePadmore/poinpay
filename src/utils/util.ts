@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 
 /**
  * Converts a string to a number.
@@ -27,4 +28,17 @@ export function toBool(value: string): boolean {
 export function normalizePort(port: string): number {
     const parsedPort = Number(port);
     return (Number.isInteger(parsedPort) && parsedPort >= 0) ? parsedPort : 5432;
+}
+
+
+export async function verifyHashedString(val: string, hashedVal: string): Promise<boolean> {
+    const isMatch = await bcrypt.compare(val, hashedVal);
+    return isMatch;
+}
+
+
+export async function hashString(val: string): Promise<string> {
+    const salt = await bcrypt.genSalt();
+    const hashedVal = await bcrypt.hash(val, salt);
+    return hashedVal;
 }

@@ -27,6 +27,7 @@ export const dataSource = new DataSource({
     migrations: ['dist/database/migrations/*.js'],
     synchronize: !isProduction, // Disable synchronize in production
     ssl: isProduction,
+    poolSize: 10
 });
 
 dataSource.initialize()
