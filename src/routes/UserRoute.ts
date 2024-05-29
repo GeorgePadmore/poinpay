@@ -5,6 +5,7 @@ import { dataSource } from "../utils/database/DataSource"; // Import your DataSo
 import { User } from "../models/User";
 import { UserRepository } from '../repositories/UserRepository';
 import { SignupSchema } from "../../schemas/SignupSchema";
+import { LoginSchema } from "../../schemas/LoginSchema";
 
 
 export function UserRoutes(fastify: FastifyInstance, opts: any, done: () => void) {
@@ -24,15 +25,10 @@ export function UserRoutes(fastify: FastifyInstance, opts: any, done: () => void
     });
 
 
-    /*
-    fastify.post("/login", async (request, reply) => {
-        const user = await userController.registerUser(request, reply);
-        const payload = { userId: user.id, username: user.username, email: user.email }
-        const token = fastify.jwt.sign(payload);
-
-        return {respCode: '000', responseMessage: "Login successful",  }
+    fastify.post("/login", {schema: LoginSchema }, async (request, reply) => {
+        return await userController.authenticateUser(request, reply, fastify);
     });
-    */
+    
 
 
     // POST /api/register: Register a new user.

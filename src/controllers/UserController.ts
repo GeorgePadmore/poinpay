@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { UserService } from "../services/UserService";
-import { SUCCESS, FAILURE, USER_CREATION_FAILED, EMAIL_VERIFY_FAILED } from "../utils/constant";
+import { SUCCESS, FAILURE, USER_CREATION_FAILED, EMAIL_VERIFY_FAILED, LOGIN_FAILED } from "../utils/constant";
 
 export class UserController {
     
@@ -31,16 +31,15 @@ export class UserController {
     }
 
     
-    /*
-    async authenticateUser(request: FastifyRequest, reply: FastifyReply):Promise<any> {
+    async authenticateUser(request: FastifyRequest, reply: FastifyReply, fastify: FastifyInstance):Promise<any> {
         const { username, password } = request.body as {username: string, password: string};
         try {
-          return await this.userService.createUser(username, password);
+          const response = await this.userService.signInUser({username, password}, fastify);
+          reply.send(response);
         } catch (error) {
-          reply.status(400).send({ error: 'Could not create user' });
+          reply.status(400).send(LOGIN_FAILED);
         }
     }
-    */
 
 
 }

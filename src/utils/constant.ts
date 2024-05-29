@@ -11,3 +11,5 @@ export const EMAIL_VERIFY_FAILED = { responseCode: '010', responseDesc: 'Your ac
 export const INVALID_VERIFY_TOKEN = { responseCode: '011', responseDesc: 'Invalid or expired verification token.' };
 export const ACCOUNT_UNVERIFIED = { responseCode: '012', responseDesc: 'Sorry, your account has not been verified. Kindly verify it in order to login.' };
 export const WRONG_LOGIN_CREDENTIALS = { responseCode: '013', responseDesc: 'Sorry! You provided incorrect login details. Please check and try again.' };
+export const LOGIN_SUCCESS = { responseCode: '014', responseDesc: 'You have been logged in successfully.' };
+export const LOGIN_FAILED = { responseCode: '015', responseDesc: 'Sorry, we could not log you in. Please try again.' };

@@ -5,7 +5,7 @@ import { UserRepository } from '../repositories/UserRepository';
 import { hashString, verifyHashedString  } from "../utils/util";
 import { sendVerificationEmail } from '../utils/EmailService';
 
-import { SUCCESS, FAILURE, USER_CREATION_FAILED, USER_CREATION_SUCCESS, USERNAME_EXISTS, EMAIL_EXISTS, RECORD_NOT_FOUND, EMAIL_ALREADY_VERIFIED, EMAIL_VERIFY_FAILED, EMAIL_VERIFY_SUCCESS, INVALID_VERIFY_TOKEN, ACCOUNT_UNVERIFIED, WRONG_LOGIN_CREDENTIALS } from "../utils/constant";
+import { SUCCESS, FAILURE, USER_CREATION_FAILED, USER_CREATION_SUCCESS, USERNAME_EXISTS, EMAIL_EXISTS, RECORD_NOT_FOUND, EMAIL_ALREADY_VERIFIED, EMAIL_VERIFY_FAILED, EMAIL_VERIFY_SUCCESS, INVALID_VERIFY_TOKEN, ACCOUNT_UNVERIFIED, WRONG_LOGIN_CREDENTIALS, LOGIN_SUCCESS } from "../utils/constant";
 
 
 
@@ -98,9 +98,8 @@ constructor(private readonly userRepository: UserRepository) {}
 
 
 
-  /*
-  //TODO: Only signin when emailVerified is true
-  async signInUser(data: {username: string, password: string}, fastify: FastifyInstance): Promise<{responseCode: string, responseDesc: string}> {
+  
+  async signInUser(data: {username: string, password: string}, fastify: FastifyInstance): Promise<{responseCode: string, responseDesc: string, accessToken?: string}> {
     const { username, password } = data;
 
     const user = await this.userRepository.findUser({ username, activeStatus: true });
@@ -123,12 +122,10 @@ constructor(private readonly userRepository: UserRepository) {}
      // Update user's authentication status
     //  await this.dbService.updateCustomerAuth({ custId: user.custId }, { loggedInStatus: "LI", loggedInAt: this.currentDateTime(), token: data.pushToken });
     
-    // const passwordHash = await bcrypt.hash(password, 10);
-    // const user = this.userRepository.create({ username, name: "", email, password: passwordHash });
-    // await this.userRepository.save(user);
-    // return user;
+    // processPreviousCustomerSession
+
+    return { ...LOGIN_SUCCESS, accessToken };
   }
-  */ 
 
 
 
