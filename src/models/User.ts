@@ -46,7 +46,7 @@ export class User {
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
-    @UpdateDateColumn({ name: 'updated_at', nullable: true })
+    @UpdateDateColumn({ name: 'updated_at', nullable: true, default: null })
     updatedAt: Date;
 
 

@@ -35,7 +35,7 @@ export class ActivityTrail {
     @Length(1, 255)
     src: string;
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user: User;
 
@@ -48,6 +48,6 @@ export class ActivityTrail {
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
-    @UpdateDateColumn({ name: 'updated_at', nullable: true })
+    @UpdateDateColumn({ name: 'updated_at', nullable: true, default: null })
     updatedAt: Date;
 }

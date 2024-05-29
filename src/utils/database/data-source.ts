@@ -1,7 +1,15 @@
 import { DataSource } from "typeorm";
-import { User } from "../../models/User"; // Import your User entity
-import { normalizePort } from "../util";
+import { normalizePort } from "../util"; // Adjust this import if normalizePort is in the same directory or higher
 import * as dotenv from 'dotenv';
+import { ActivityTrail } from "../../models/ActivityTrail";
+import { AuthRequest } from "../../models/AuthRequest";
+import { Notifications } from "../../models/Notification";
+import { Transaction } from "../../models/Transaction";
+import { TransactionFee } from "../../models/TransactionFee";
+import { User } from "../../models/User";
+import { UserAuthSession } from "../../models/UserAuthSession";
+import { Wallet } from "../../models/Wallet";
+import { WalletTransaction } from "../../models/WalletTransaction";
 
 dotenv.config();
 
@@ -15,7 +23,7 @@ export const dataSource = new DataSource({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     logging: !isProduction,
-    entities: [User],
+    entities: [ ActivityTrail, AuthRequest, Notifications, Transaction, TransactionFee, User, UserAuthSession, Wallet, WalletTransaction ],
     migrations: ['dist/database/migrations/*.js'],
     synchronize: !isProduction, // Disable synchronize in production
     ssl: isProduction,

@@ -12,11 +12,11 @@ export class Transaction {
     @Length(1, 255)
     transactionId: string;
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'sender_id' })
     sender: User;
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'recipient_id' })
     recipient: User;
 
@@ -57,6 +57,6 @@ export class Transaction {
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
-    @UpdateDateColumn({ name: 'updated_at', nullable: true })
+    @UpdateDateColumn({ name: 'updated_at', nullable: true, default: null })
     updatedAt: Date;
 }

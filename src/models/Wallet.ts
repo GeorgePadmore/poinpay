@@ -7,7 +7,7 @@ export class Wallet {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user: User;
 
@@ -35,6 +35,6 @@ export class Wallet {
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
-    @UpdateDateColumn({ name: 'updated_at', nullable: true })
+    @UpdateDateColumn({ name: 'updated_at', nullable: true, default: null })
     updatedAt: Date;
 }
