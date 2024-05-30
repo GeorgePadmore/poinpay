@@ -30,7 +30,7 @@ export class Transaction {
     @IsNumber()
     charge: number;
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, default: 'GHS' })
     @IsNotEmpty()
     @Length(1, 10)
     currency: string;

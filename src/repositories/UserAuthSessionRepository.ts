@@ -1,5 +1,4 @@
 import { dataSource } from '../utils/database/DataSource';
-import { User } from '../models/User';
 import { Repository } from 'typeorm';
 import { UserAuthSession } from '../models/UserAuthSession';
 

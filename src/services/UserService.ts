@@ -3,6 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { User } from '../models/User';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserAuthSessionRepository } from '../repositories/UserAuthSessionRepository';
+import { WalletRepository } from '../repositories/WalletRepository';
 
 import { hashString, verifyHashedString, currentDateTime  } from "../utils/util";
 import { sendVerificationEmail } from '../utils/EmailService';
@@ -14,11 +15,13 @@ import { SUCCESS, FAILURE, USER_CREATION_FAILED, USER_CREATION_SUCCESS, USERNAME
 export class UserService {
 
   private readonly userAuthSessionRepository: UserAuthSessionRepository;
+  private readonly walletRepository: WalletRepository;
 
 
-constructor(private readonly userRepository: UserRepository) {
-  this.userAuthSessionRepository = new UserAuthSessionRepository();
-}
+  constructor(private readonly userRepository: UserRepository) {
+    this.userAuthSessionRepository = new UserAuthSessionRepository();
+    this.walletRepository = new WalletRepository();
+  }
 
 
   /**
@@ -94,6 +97,12 @@ constructor(private readonly userRepository: UserRepository) {
 
       const update = await this.userRepository.updateUser({id: user.id}, {emailVerified: true});
       if (update) {
+
+        const walletExists = await this.walletRepository.findUserWallet({user, activeStatus: true});
+        if(!walletExists){
+          await this.walletRepository.saveUserWallet({user});
+        }
+
         return EMAIL_VERIFY_SUCCESS;
       }
       return EMAIL_VERIFY_FAILED
