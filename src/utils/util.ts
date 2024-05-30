@@ -1,4 +1,5 @@
 import * as bcrypt from 'bcrypt';
+import * as moment from 'moment';
 
 /**
  * Converts a string to a number.
@@ -42,3 +43,7 @@ export async function hashString(val: string): Promise<string> {
     const hashedVal = await bcrypt.hash(val, salt);
     return hashedVal;
 }
+
+export function currentDateTime(){
+    return moment().toDate();
+  }

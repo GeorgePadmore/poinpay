@@ -1,40 +1,36 @@
-import { EntityRepository, Repository } from 'typeorm';
 import { dataSource } from '../utils/database/DataSource';
 import { User } from '../models/User';
+import { Repository } from 'typeorm';
 
-// @EntityRepository(User)
 export class UserRepository{
-// export class UserRepository extends Repository<User> {
+    private userRepository: Repository<User>;
 
-    // constructor(private readonly userRepository: UserRepository) {}
-
-    // const userRepository = dataSource.getRepository(User);
+    constructor(){
+        this.userRepository = dataSource.getRepository(User);
+    }
 
     async saveUser(user: Partial<User>): Promise<User> {
-        const userRepository = dataSource.getRepository(User);
-        const userRec = userRepository.create(user);
-        return await userRepository.save(userRec);
+        const userRec = this.userRepository.create(user);
+        return await this.userRepository.save(userRec);
     }
-
+    
     async findUser(where: Partial<User>): Promise<User | undefined> {
-        const userRepository = dataSource.getRepository(User);
-        return await userRepository.findOne({
-            where: {
-                delStatus: false, ...where
-            }
+        return await this.userRepository.findOne({
+          where: {
+            delStatus: false,
+            ...where
+          }
         });
     }
-
+    
     async updateUser(where: Partial<User>, data: Partial<User>): Promise<User | undefined> {
-        const userRepository = dataSource.getRepository(User);
-        await userRepository.update(where, data);
-        return await userRepository.findOne({ where });
+        await this.userRepository.update(where, data);
+        return await this.userRepository.findOne({ where });
     }
-
-    async updateUserOnly(where: Partial<User>, data: Partial<User>): Promise<Boolean> {
-        const userRepository = dataSource.getRepository(User);
-        const update = await userRepository.update(where, data);
-        return (update.affected > 0) ? true : false;
+    
+    async updateUserOnly(where: Partial<User>, data: Partial<User>): Promise<boolean> {
+        const update = await this.userRepository.update(where, data);
+        return update.affected > 0;
     }
 
     // async findUserByEmail(email: string): Promise<User | undefined> {

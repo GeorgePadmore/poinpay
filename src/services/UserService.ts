@@ -2,7 +2,9 @@ import { FastifyInstance } from 'fastify';
 
 import { User } from '../models/User';
 import { UserRepository } from '../repositories/UserRepository';
-import { hashString, verifyHashedString  } from "../utils/util";
+import { UserAuthSessionRepository } from '../repositories/UserAuthSessionRepository';
+
+import { hashString, verifyHashedString, currentDateTime  } from "../utils/util";
 import { sendVerificationEmail } from '../utils/EmailService';
 
 import { SUCCESS, FAILURE, USER_CREATION_FAILED, USER_CREATION_SUCCESS, USERNAME_EXISTS, EMAIL_EXISTS, RECORD_NOT_FOUND, EMAIL_ALREADY_VERIFIED, EMAIL_VERIFY_FAILED, EMAIL_VERIFY_SUCCESS, INVALID_VERIFY_TOKEN, ACCOUNT_UNVERIFIED, WRONG_LOGIN_CREDENTIALS, LOGIN_SUCCESS } from "../utils/constant";
@@ -11,7 +13,12 @@ import { SUCCESS, FAILURE, USER_CREATION_FAILED, USER_CREATION_SUCCESS, USERNAME
 
 export class UserService {
 
-constructor(private readonly userRepository: UserRepository) {}
+  private readonly userAuthSessionRepository: UserAuthSessionRepository;
+
+
+constructor(private readonly userRepository: UserRepository) {
+  this.userAuthSessionRepository = new UserAuthSessionRepository();
+}
 
 
   /**
@@ -119,34 +126,29 @@ constructor(private readonly userRepository: UserRepository) {}
     const options = { expiresIn: '24h' };
     const accessToken = await fastify.jwt.sign(payload, options);
 
-     // Update user's authentication status
-    //  await this.dbService.updateCustomerAuth({ custId: user.custId }, { loggedInStatus: "LI", loggedInAt: this.currentDateTime(), token: data.pushToken });
-    
-    // processPreviousCustomerSession
+     // Update user's authentication status    
+    await this.processPreviousCustomerSession({user, token: accessToken});
 
     return { ...LOGIN_SUCCESS, accessToken };
   }
 
 
 
-  /*
-  async processPreviousCustomerSession(data: {custId: string, token: string}): Promise<boolean>{
+  async processPreviousCustomerSession(data: {user: User, token: string}): Promise<boolean>{
     try {
-      const { custId, token } = data;
+      const { user, token } = data;
 
-      await this.dbService.updateCustomerAuthSession({custId, status: true}, {status: false, expiredAt: this.currentDateTime()});
-      const authSessionSave = this.dbService.saveCustomerAuthSession({custId, token, status: true, loggedInAt: this.currentDateTime()});
-       return (authSessionSave) ? true : false;
+      await this.userAuthSessionRepository.updateUserAuthSession({user}, {activeStatus: false, delStatus: true, expiredAt: currentDateTime()});
+      const authSessionSave = await this.userAuthSessionRepository.saveUserAuthSession({user, token, status: "LI", loggedInAt: currentDateTime()});
+      return (authSessionSave) ? true : false;
 
     } catch (error) {
       console.error(error);
       return false;
     }
   }
-  */
+  
 
 
 
 }
-
-// export default UserService;
