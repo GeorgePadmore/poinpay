@@ -16,24 +16,22 @@ export function UserRoutes(fastify: FastifyInstance, opts: any, done: () => void
     const userController = new UserController(userService); 
     
 
-    fastify.post("/signup", { schema: SignupSchema },  async (request, reply) => {
+    // Register a new user.
+    fastify.post("/register", { schema: SignupSchema },  async (request, reply) => {
         return await userController.registerUser(request, reply, fastify);
     });
 
+    // Verify user's email.
     fastify.get("/verify-email", async (request, reply) => {
         await userController.verifyEmail(request, reply, fastify);
     });
 
 
+    // Authenticate a user.
     fastify.post("/login", {schema: LoginSchema }, async (request, reply) => {
         return await userController.authenticateUser(request, reply, fastify);
     });
     
-
-
-    // POST /api/register: Register a new user.
-    // POST /api/login: Authenticate a user.
-    // POST /api/verify-email: Verify user's email.
 
     done();
 }
