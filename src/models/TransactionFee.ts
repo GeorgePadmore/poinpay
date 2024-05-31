@@ -34,10 +34,6 @@ export class TransactionFee {
     @Length(1, 255)
     comment: string;
 
-    @ManyToOne(() => User, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'user_id' })
-    user: User;
-
     @Column({ name: 'active_status', default: true })
     activeStatus: boolean;
 

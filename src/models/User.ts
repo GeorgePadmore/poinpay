@@ -1,5 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany } from 'typeorm';
 import { IsEmail, IsNotEmpty, Length } from 'class-validator';
+import { Wallet } from './Wallet';
+import { ActivityTrail } from './ActivityTrail';
+import { UserAuthSession } from './UserAuthSession';
+import { Notifications } from './Notification';
+import { Transaction } from './Transaction';
 
 @Entity()
 export class User {
@@ -48,6 +53,5 @@ export class User {
 
     @UpdateDateColumn({ name: 'updated_at', nullable: true, default: null })
     updatedAt: Date;
-
 
 }

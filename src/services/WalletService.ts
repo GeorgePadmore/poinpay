@@ -9,7 +9,6 @@ import { RECORD_NOT_FOUND, SUCCESS } from 'utils/constant';
 import { dataSource } from 'utils/database/DataSource';
 
 
-
 export class WalletService {
 
     private readonly walletRepository: WalletRepository;
