@@ -60,10 +60,8 @@ export class WalletTransaction {
     @Length(1, 255)
     networkTransId: string;
 
-    @Column({ nullable: false })
-    @IsNotEmpty()
-    @Length(1, 255)
-    status: string;
+    @Column({ nullable: true, default: null })
+    status: boolean;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;

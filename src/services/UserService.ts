@@ -9,6 +9,7 @@ import { hashString, verifyHashedString, currentDateTime  } from "../utils/util"
 import { sendVerificationEmail } from '../utils/EmailService';
 
 import { SUCCESS, FAILURE, USER_CREATION_FAILED, USER_CREATION_SUCCESS, USERNAME_EXISTS, EMAIL_EXISTS, RECORD_NOT_FOUND, EMAIL_ALREADY_VERIFIED, EMAIL_VERIFY_FAILED, EMAIL_VERIFY_SUCCESS, INVALID_VERIFY_TOKEN, ACCOUNT_UNVERIFIED, WRONG_LOGIN_CREDENTIALS, LOGIN_SUCCESS } from "../utils/constant";
+import { WalletService } from './WalletService';
 
 
 
@@ -16,11 +17,13 @@ export class UserService {
 
   private readonly userAuthSessionRepository: UserAuthSessionRepository;
   private readonly walletRepository: WalletRepository;
+  private readonly walletService: WalletService;
 
 
   constructor(private readonly userRepository: UserRepository) {
     this.userAuthSessionRepository = new UserAuthSessionRepository();
     this.walletRepository = new WalletRepository();
+    this.walletService = new WalletService();
   }
 
 
@@ -98,9 +101,8 @@ export class UserService {
       const update = await this.userRepository.updateUser({id: user.id}, {emailVerified: true});
       if (update) {
 
-        const walletExists = await this.walletRepository.findUserWallet({user, activeStatus: true});
-        if(!walletExists){
-          await this.walletRepository.saveUserWallet({user});
+        if(!(this.walletService.isUserWalletExists({user})) ){
+          await this.walletService.createUserWallet({user});
         }
 
         return EMAIL_VERIFY_SUCCESS;

@@ -46,4 +46,11 @@ export async function hashString(val: string): Promise<string> {
 
 export function currentDateTime(){
     return moment().toDate();
+}
+
+
+export enum WalletTransType {
+    InitiateWallet = "IWT", //Initiate Wallet
+    CreditWallet = "CWT", // Credit Wallet
+    Transfer = "TNF",
   }
