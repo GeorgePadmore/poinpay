@@ -1,10 +1,14 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { UserService } from "../services/UserService";
-import { SUCCESS, FAILURE, USER_CREATION_FAILED, EMAIL_VERIFY_FAILED, LOGIN_FAILED } from "../utils/constant";
+import { SUCCESS, FAILURE, USER_CREATION_FAILED, EMAIL_VERIFY_FAILED, LOGIN_FAILED } from "../utils/Constant";
+import { WalletService } from '../services/WalletService';
 
 export class UserController {
     
-    constructor(private readonly userService: UserService) {}
+    constructor(private readonly userService: UserService) {
+      const walletService = new WalletService();
+      this.userService.setWalletService(walletService);
+    }
 
     public async registerUser(request: FastifyRequest, reply: FastifyReply, fastify: FastifyInstance):Promise<any> {
         const { name, username, email, password } = request.body as {name: string, username: string, email: string, password: string};

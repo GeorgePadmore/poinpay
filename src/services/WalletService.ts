@@ -1,156 +1,171 @@
-import { FastifyInstance } from 'fastify';
-
+import { WalletTransType } from '../utils/util';
 import { User } from '../models/User';
 import { WalletRepository } from '../repositories/WalletRepository';
-
-import { WalletTransType  } from "../utils/util";
-import { WalletTransactionRepository } from 'repositories/WalletTransactionRepository';
-import { RECORD_NOT_FOUND, SUCCESS } from 'utils/constant';
-import { dataSource } from 'utils/database/DataSource';
-
+import { WalletTransactionRepository } from '../repositories/WalletTransactionRepository';
+import { RECORD_NOT_FOUND, SUCCESS, ACCOUNT_TOPUP_SUCCESS, ACCOUNT_TOPUP_FAILED } from '../utils/Constant';
+import { dataSource } from '../utils/database/DataSource';
+import { UserService } from './UserService';
 
 export class WalletService {
 
     private readonly walletRepository: WalletRepository;
     private readonly walletTransactionRepository: WalletTransactionRepository;
-
+    private userService: UserService | undefined;
 
     constructor() {
         this.walletTransactionRepository = new WalletTransactionRepository();
         this.walletRepository = new WalletRepository();
     }
 
-
-    /**
-     * Checks if the User's Wallet exists.
-     * @param data - Object containing the user.
-     * @returns Promise<boolean> - True if the wallet exists, otherwise false.
-    */
-    public async isUserWalletExists(data: {user: User}): Promise<boolean> {
-        const { user } = data;
-        const wallet = await this.walletRepository.findUserWallet({user, activeStatus: true});
-        return (wallet) ? true: false;
+    // Method to set UserService
+    public setUserService(userService: UserService) {
+        this.userService = userService;
     }
 
-
-    /**
-     * Creates a user wallet within a transaction block to ensure data consistency.
-     * @param data - Object containing the user for whom the wallet is being created.
-     * @returns Promise<boolean> - True if the wallet creation and transaction log succeed, otherwise false.
-    */
-    public async createUserWallet(data: { user: User }): Promise<boolean> {
-        const queryRunner = dataSource.createQueryRunner();
-
-        try {
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
+    public async isUserWalletExists(data: { user: User }): Promise<boolean> {
         const { user } = data;
+        const wallet = await this.walletRepository.findUserWalletByUserId(user.id);
+        return wallet !== undefined;
+    }
 
-        // Check if the user already has a wallet
-        const wallet = await this.walletRepository.findUserWallet({ user });
-        if (!wallet) {
-            const transactionId = await this.generateTransactionId();
-
-            // Create user wallet
-            const walletCreation = await queryRunner.manager.save(this.walletRepository.saveUserWallet({ user }));
-
-            if (walletCreation) {
-            // Create wallet transaction
-            const walletTransaction = await queryRunner.manager.save(
-                this.walletTransactionRepository.saveUserWalletTransaction({
-                transactionId,
-                transType: WalletTransType.InitiateWallet,
-                status: true,
-                user: user,
-                })
-            );
-
-            if (walletTransaction) {
-                // Commit the transaction
-                await queryRunner.commitTransaction();
-                return true;
+    public async createUserWallet(data: { user: User }): Promise<boolean> {
+        try {
+            const { user } = data;
+            const walletExists = await this.isUserWalletExists({ user });
+            if (!walletExists) {
+                const transactionId = await this.generateTransactionId();
+                return await this.adjustWallet({
+                    user,
+                    amount: 0,
+                    transactionId,
+                    transType: WalletTransType.InitiateWallet
+                });
             }
-            }
-
-            // If wallet creation or wallet transaction creation fails, rollback the transaction
-            await queryRunner.rollbackTransaction();
+            return false;
+        } catch (error) {
+            console.error(error);
             return false;
         }
-
-        // If the user already has a wallet, return false
-        return false;
-
-        } catch (error) {
-        // Rollback the transaction in case of error
-        await queryRunner.rollbackTransaction();
-        console.error(error);
-        return false;
-        } finally {
-        // Release the query runner
-        await queryRunner.release();
-        }
     }
 
+    public async getUserBalance(data: { userId: number }): Promise<{ responseCode: string, responseDesc: string, responseData?: { balance: number, currency: string } }> {
+        if (!this.userService) throw new Error("UserService not set");
 
-
-    /**
-     * Gets a user wallet balance.
-     * @param data - Object containing the user for whom the wallet is being searched.
-     * @returns Promise<{responseCode: string, responseDesc: string, balance?: number, currency?: string}> - Balance response if the wallet exists, else RECORD_NOT_FOUND response if the wallet is empty.
-    */
-    public async getUserBalance(data: {user: User}): Promise<{responseCode: string, responseDesc: string, balance?: number, currency?: string}>{
-        const { user } = data;
-
-        const wallet = await this.walletRepository.findUserWallet({user, activeStatus: true});
-        if(wallet){
-            return {...SUCCESS, balance: Number(wallet.netBal), currency: wallet.currency}
+        const { userId } = data;
+        const wallet = await this.walletRepository.findUserWalletByUserId(userId);
+        if (wallet) {
+            return { ...SUCCESS, responseData: { balance: Number(wallet.netBal), currency: wallet.currency } };
         }
+
         return RECORD_NOT_FOUND;
     }
 
+    public async topUpBalance(data: { userId: number, amount: number }): Promise<{ responseCode: string, responseDesc: string, responseData?: { balance: number, currency: string } }> {
+        try {
+            const { userId, amount } = data;
 
+            if (!this.userService) throw new Error("UserService not set");
 
-
-
-    public async getTransactionHistory(data: {user: User}) {
-        const { user } = data;
-
-        //I need to be sure whether to fetch from wallet Transaction or transaction table.
-        // wallet Transaction shows wallet creation history, account top ups and transfers.
-
-        //You can later on get the detailed transaction when you search the transId.
-        // await this.wall
+            const wallet = await this.walletRepository.findUserWalletByUserId(userId);
+            if (wallet) {
+                const userResponse = await this.userService.getUserDetailsById(userId);
+                if (userResponse.data) {
+                    const transactionId = await this.generateTransactionId();
+                    const topUpResult = await this.adjustWallet({
+                        user: userResponse.data,
+                        amount,
+                        transactionId,
+                        transType: WalletTransType.CreditWallet
+                    });
+                    if (topUpResult) {
+                        return ACCOUNT_TOPUP_SUCCESS;
+                    }
+                    return ACCOUNT_TOPUP_FAILED;
+                }
+                return RECORD_NOT_FOUND;
+            }
+            return RECORD_NOT_FOUND;
+        } catch (error) {
+            console.error(error);
+            return ACCOUNT_TOPUP_FAILED;
+        }
     }
 
+    public async adjustWallet(data: { user: User, amount: number, transactionId: string, transType: WalletTransType }): Promise<boolean> {
+        const queryRunner = dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
 
+        try {
+            const { user, amount, transactionId, transType } = data;
+            const wallet = await this.walletRepository.findUserWalletByUserId(user.id);
+            let grossBalBef: number;
+            let netBalBef: number;
 
+            if (wallet) {
+                grossBalBef = Number(wallet.grossBal);
+                netBalBef = Number(wallet.netBal);
+                const { newGrossBal, newNetBal } = this.processTransTypeOperation({ transType, grossBal: grossBalBef, netBal: netBalBef, amount: Number(amount) });
 
-    /**
-    * Generates a unique transaction ID.
-    * @returns Promise<string> - The generated transaction ID.
-    */
+                wallet.grossBal = Number(newGrossBal);
+                wallet.netBal = Number(newNetBal);
+
+                await queryRunner.manager.save(wallet);
+            } else {
+                const { newGrossBal, newNetBal } = this.processTransTypeOperation({ transType, grossBal: 0, netBal: 0, amount: Number(amount) });
+
+                const newWallet = this.walletRepository.createWalletEntity({ user, grossBal: Number(newGrossBal), netBal: Number(newNetBal) });
+                await queryRunner.manager.save(newWallet);
+            }
+            
+            const walletTransaction = this.walletTransactionRepository.createWalletTransactionEntity({
+                transactionId,
+                transType,
+                amount,
+                netAmount: amount,
+                charge: 0,
+                grossBalBef,
+                grossBalAft: wallet.grossBal,
+                netBalBef,
+                netBalAft: wallet.netBal,
+                user,
+                status: true
+            });
+            await queryRunner.manager.save(walletTransaction);
+
+            await queryRunner.commitTransaction();
+            return true;
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            console.error(error);
+            return false;
+        } finally {
+            await queryRunner.release();
+        }
+    }
+
+    private processTransTypeOperation(data: { transType: WalletTransType, grossBal: number, netBal: number, amount: number }): { newGrossBal: number, newNetBal: number } {
+        const { transType, grossBal, netBal, amount } = data;
+
+        let newGrossBal = parseFloat((grossBal + amount).toFixed(2));
+        let newNetBal = parseFloat((netBal + amount).toFixed(2));
+
+        if (transType === WalletTransType.Transfer) {
+            newGrossBal = parseFloat((grossBal - amount).toFixed(2));
+            newNetBal = parseFloat((netBal - amount).toFixed(2));
+        }
+
+        return { newGrossBal, newNetBal };
+    }
+
     private async generateTransactionId(codeLength = 12): Promise<string> {
-        let code = '';
-  
+        let code;
         do {
-            for (let i = 0; i < codeLength; i++) {
-                const randomDigit = Math.floor(Math.random() * 10);
-                code += randomDigit.toString();
-            }
-  
-            const record = await this.walletTransactionRepository.findUserWalletTransaction({transactionId: code});
-            // If record is null or undefined, it means the code doesn't exist yet, so we can exit the loop
-            if (!record) {
-                break;
-            }
-            code = ''; // Reset the code and generate a new one
+            code = Array.from({ length: codeLength }, () => Math.floor(Math.random() * 10).toString()).join('');
+            const record = await this.walletTransactionRepository.findUserWalletTransaction({ transactionId: code });
+            if (!record) break;
         } while (true);
-  
+
         return code;
     }
-  
-
-
-
 }

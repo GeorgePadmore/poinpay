@@ -16,37 +16,37 @@ export class WalletTransaction {
     @Length(1, 255)
     transactionId: string;
 
-    @Column({ type: 'decimal', precision: 11, scale: 2, nullable: false, default: 0 })
+    @Column({ type: 'decimal', precision: 15, scale: 2, nullable: false, default: 0 })
     @IsNotEmpty()
     @IsNumber()
     amount: number;
 
-    @Column({ name: 'net_amount', type: 'decimal', precision: 11, scale: 2, nullable: false, default: 0 })
+    @Column({ name: 'net_amount', type: 'decimal', precision: 15, scale: 2, nullable: false, default: 0 })
     @IsNotEmpty()
     @IsNumber()
     netAmount: number;
 
-    @Column({ type: 'decimal', precision: 11, scale: 2, nullable: false, default: 0 })
+    @Column({ type: 'decimal', precision: 15, scale: 2, nullable: false, default: 0 })
     @IsNotEmpty()
     @IsNumber()
     charge: number;
 
-    @Column({ name: 'gross_bal_bef', type: 'decimal', precision: 11, scale: 2, nullable: false, default: 0 })
+    @Column({ name: 'gross_bal_bef', type: 'decimal', precision: 15, scale: 2, nullable: false, default: 0 })
     @IsNotEmpty()
     @IsNumber()
     grossBalBef: number;
 
-    @Column({ name: 'gross_bal_aft', type: 'decimal', precision: 11, scale: 2, nullable: false, default: 0 })
+    @Column({ name: 'gross_bal_aft', type: 'decimal', precision: 15, scale: 2, nullable: false, default: 0 })
     @IsNotEmpty()
     @IsNumber()
     grossBalAft: number;
 
-    @Column({ name: 'net_bal_bef', type: 'decimal', precision: 11, scale: 2, nullable: false, default: 0 })
+    @Column({ name: 'net_bal_bef', type: 'decimal', precision: 15, scale: 2, nullable: false, default: 0 })
     @IsNotEmpty()
     @IsNumber()
     netBalBef: number;
 
-    @Column({ name: 'net_bal_aft', type: 'decimal', precision: 11, scale: 2, nullable: false, default: 0 })
+    @Column({ name: 'net_bal_aft', type: 'decimal', precision: 15, scale: 2, nullable: false, default: 0 })
     @IsNotEmpty()
     @IsNumber()
     netBalAft: number;

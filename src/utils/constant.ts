@@ -13,3 +13,5 @@ export const ACCOUNT_UNVERIFIED = { responseCode: '012', responseDesc: 'Sorry, y
 export const WRONG_LOGIN_CREDENTIALS = { responseCode: '013', responseDesc: 'Sorry! You provided incorrect login details. Please check and try again.' };
 export const LOGIN_SUCCESS = { responseCode: '014', responseDesc: 'You have been logged in successfully.' };
 export const LOGIN_FAILED = { responseCode: '015', responseDesc: 'Sorry, we could not log you in. Please try again.' };
+export const ACCOUNT_TOPUP_SUCCESS = { responseCode: '016', responseDesc: 'Your account has been credited successfully.' };
+export const ACCOUNT_TOPUP_FAILED = { responseCode: '017', responseDesc: 'Sorry, your account could not credited. Please try again.' };

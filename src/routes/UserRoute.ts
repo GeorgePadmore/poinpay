@@ -10,9 +10,7 @@ import { LoginSchema } from "../../schemas/LoginSchema";
 
 export function UserRoutes(fastify: FastifyInstance, opts: any, done: () => void) {
   
-    // const userRepository = dataSource.getRepository(User);
-    const userRepository = new UserRepository();
-    const userService = new UserService(userRepository); 
+    const userService = new UserService(); 
     const userController = new UserController(userService); 
     
 

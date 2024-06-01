@@ -7,6 +7,7 @@ import cors from '@fastify/cors';
 import { dataSource } from './src/utils/database/DataSource';
 import { jwtConfig } from "./src/utils/JwtConfig";
 import { UserRoutes } from "./src/routes/UserRoute";
+import { WalletRoutes } from './src/routes/WalletRoute';
 
 const server = fastify({ logger: true });
 
@@ -46,11 +47,10 @@ server.register(fastifyJWT, jwtConfig);
 
 // Routes
 
-//TODO: register user Routes
 server.register(UserRoutes, { prefix: '/api' });
+server.register(WalletRoutes, { prefix: '/api' });
 
 
-//TODO: register Wallet Routes
 //TODO: register Transaction Routes
 //TODO: register Notifications Routes
 

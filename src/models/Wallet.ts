@@ -11,12 +11,12 @@ export class Wallet {
     @JoinColumn({ name: 'user_id' })
     user: User;
 
-    @Column({ name: 'gross_bal', type: 'decimal', precision: 11, scale: 2, nullable: false, default: 0 })
+    @Column({ name: 'gross_bal', type: 'decimal', precision: 15, scale: 2, nullable: false, default: 0 })
     @IsNotEmpty()
     @IsNumber()
     grossBal: number;
 
-    @Column({ name: 'net_bal', type: 'decimal', precision: 11, scale: 2, nullable: false, default: 0 })
+    @Column({ name: 'net_bal', type: 'decimal', precision: 15, scale: 2, nullable: false, default: 0 })
     @IsNotEmpty()
     @IsNumber()
     netBal: number;
