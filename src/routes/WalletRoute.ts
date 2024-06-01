@@ -10,6 +10,10 @@ export function WalletRoutes(fastify: FastifyInstance, opts: any, done: () => vo
         return await walletController.checkBalance(request, reply);
     });
 
+    fastify.get('/wallet/getTransactionHistory', { preHandler: [jwtAuthMiddleware] }, async (request, reply) => {
+        return await walletController.getTransactionHistory(request, reply);
+    });
+
     fastify.post('/wallet/topUp', { preHandler: [jwtAuthMiddleware] }, async (request, reply) => {
         return await walletController.topUpBalance(request, reply);
     });

@@ -49,8 +49,16 @@ export function currentDateTime(){
 }
 
 
+export function processPagination(data: {page?: number, limit?: number}){
+    const limit = (data.limit === null || data.limit === undefined) ? 10 : data.limit;
+    const page = (data.page === null || data.page === undefined) ? 1 : data.page;
+    return {limit, page};
+}
+
+
 export enum WalletTransType {
-    InitiateWallet = "IWT", //Initiate Wallet
-    CreditWallet = "CWT", // Credit Wallet
-    Transfer = "TNF",
-  }
+    InitiateWallet = "AO", //Account Opening
+    CreditWallet = "DP", // Account Deposit
+    Transfer = "OT", //Outbound Transfer
+    Receive = "IT", //Inbound Transfer
+}

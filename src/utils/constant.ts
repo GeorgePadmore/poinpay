@@ -15,3 +15,4 @@ export const LOGIN_SUCCESS = { responseCode: '014', responseDesc: 'You have been
 export const LOGIN_FAILED = { responseCode: '015', responseDesc: 'Sorry, we could not log you in. Please try again.' };
 export const ACCOUNT_TOPUP_SUCCESS = { responseCode: '016', responseDesc: 'Your account has been credited successfully.' };
 export const ACCOUNT_TOPUP_FAILED = { responseCode: '017', responseDesc: 'Sorry, your account could not credited. Please try again.' };
+export const TRANSACTION_HISTORY_FOUND = { responseCode: '018', responseDesc: 'We found your transaction history.' };

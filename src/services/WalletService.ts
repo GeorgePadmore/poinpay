@@ -1,8 +1,9 @@
 import { WalletTransType } from '../utils/util';
 import { User } from '../models/User';
+import { WalletTransaction } from '../models/WalletTransaction';
 import { WalletRepository } from '../repositories/WalletRepository';
 import { WalletTransactionRepository } from '../repositories/WalletTransactionRepository';
-import { RECORD_NOT_FOUND, SUCCESS, ACCOUNT_TOPUP_SUCCESS, ACCOUNT_TOPUP_FAILED } from '../utils/Constant';
+import { RECORD_NOT_FOUND, SUCCESS, ACCOUNT_TOPUP_SUCCESS, ACCOUNT_TOPUP_FAILED, TRANSACTION_HISTORY_FOUND } from '../utils/Constant';
 import { dataSource } from '../utils/database/DataSource';
 import { UserService } from './UserService';
 
@@ -48,6 +49,7 @@ export class WalletService {
         }
     }
 
+
     public async getUserBalance(data: { userId: number }): Promise<{ responseCode: string, responseDesc: string, responseData?: { balance: number, currency: string } }> {
         if (!this.userService) throw new Error("UserService not set");
 
@@ -59,6 +61,7 @@ export class WalletService {
 
         return RECORD_NOT_FOUND;
     }
+
 
     public async topUpBalance(data: { userId: number, amount: number }): Promise<{ responseCode: string, responseDesc: string, responseData?: { balance: number, currency: string } }> {
         try {
@@ -90,6 +93,8 @@ export class WalletService {
             return ACCOUNT_TOPUP_FAILED;
         }
     }
+
+
 
     public async adjustWallet(data: { user: User, amount: number, transactionId: string, transType: WalletTransType }): Promise<boolean> {
         const queryRunner = dataSource.createQueryRunner();
@@ -144,6 +149,27 @@ export class WalletService {
         }
     }
 
+
+    //Transaction History
+    public async getTransactionHistoryList(data: {userId: number, page?: number, limit?: number}): Promise<{responseCode: string, responseDesc: string, data?: WalletTransaction[], totalNumberOfRecords?: number, pageSize?: number, currentPage?: number }>{
+        const { userId, page, limit } = data;
+
+        const { transactions, count } = await this.walletTransactionRepository.findUserWalletTransactionsByUserId({userId, page, limit});
+        if(count === 0){
+            return RECORD_NOT_FOUND;
+        }
+
+        return {
+            ...TRANSACTION_HISTORY_FOUND, 
+            data: transactions, 
+            totalNumberOfRecords: count, 
+            pageSize: transactions.length,
+            currentPage: page
+        }
+    }
+
+
+
     private processTransTypeOperation(data: { transType: WalletTransType, grossBal: number, netBal: number, amount: number }): { newGrossBal: number, newNetBal: number } {
         const { transType, grossBal, netBal, amount } = data;
 
@@ -157,6 +183,8 @@ export class WalletService {
 
         return { newGrossBal, newNetBal };
     }
+
+
 
     private async generateTransactionId(codeLength = 12): Promise<string> {
         let code;

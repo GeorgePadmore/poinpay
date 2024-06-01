@@ -1,7 +1,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { WalletService } from '../services/WalletService';
-import { JwtPayload } from 'utils/Interfaces';
+import { JwtPayload } from '../utils/Interfaces';
 import { UserService } from '../services/UserService';
+import { ACCOUNT_TOPUP_FAILED } from '../utils/Constant';
 
 export class WalletController {
     private walletService: WalletService;
@@ -16,13 +17,26 @@ export class WalletController {
     public async checkBalance(request: FastifyRequest, reply: FastifyReply) {
         try {
             const userId = (request.user as JwtPayload).userId; // Extract userId from the JWT token        
-            const balance = await this.walletService.getUserBalance({userId})
-            reply.send(balance);
+            const balanceResponse = await this.walletService.getUserBalance({userId})
+            reply.send(balanceResponse);
         } catch (error) {
             console.error(error);
             reply.status(500).send({ message: 'Failed to retrieve balance' });
         }
     }
+
+
+    public async getTransactionHistory(request: FastifyRequest, reply: FastifyReply) {
+        try {
+            const userId = (request.user as JwtPayload).userId; // Extract userId from the JWT token        
+            const transactionHistoryResponse = await this.walletService.getTransactionHistoryList({userId})
+            reply.send(transactionHistoryResponse);
+        } catch (error) {
+            console.error(error);
+            reply.status(500).send({ message: 'Failed to retrieve transaction history' });
+        }
+    }
+
 
     public async topUpBalance(request: FastifyRequest, reply: FastifyReply) {
         try {
@@ -33,7 +47,7 @@ export class WalletController {
             reply.send(topupResponse);
         } catch (error) {
             console.error(error);
-            reply.status(500).send({ message: 'Failed to retrieve balance' });
+            reply.status(500).send(ACCOUNT_TOPUP_FAILED);
         }
     }
 }
