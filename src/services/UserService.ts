@@ -33,7 +33,7 @@ export class UserService {
    * @returns The newly created user.
    * @throws Error if username or email already exists.
    */
-  async registerUser(data: {name: string, username: string, email: string, password: string}, fastify: FastifyInstance): Promise<{responseCode: string, responseDesc: string}> {
+  public async registerUser(data: {name: string, username: string, email: string, password: string}, fastify: FastifyInstance): Promise<{responseCode: string, responseDesc: string}> {
     console.log(data);
     
     const { name, username, email, password } = data;
@@ -85,7 +85,7 @@ export class UserService {
    * @returns The updated user with emailVerified set to true.
    * @throws Error if the token is invalid or expired.
    */
-  async verifyEmail(token: string, fastify: FastifyInstance): Promise<{responseCode: string, responseDesc: string}> {
+  public async verifyEmail(token: string, fastify: FastifyInstance): Promise<{responseCode: string, responseDesc: string}> {
     try {
       const decoded = fastify.jwt.verify(token) as { userId: number; email: string };
 
@@ -117,7 +117,7 @@ export class UserService {
 
 
   
-  async signInUser(data: {username: string, password: string}, fastify: FastifyInstance): Promise<{responseCode: string, responseDesc: string, accessToken?: string}> {
+  public async signInUser(data: {username: string, password: string}, fastify: FastifyInstance): Promise<{responseCode: string, responseDesc: string, accessToken?: string}> {
     const { username, password } = data;
 
     const user = await this.userRepository.findUser({ username, activeStatus: true });
@@ -145,7 +145,7 @@ export class UserService {
 
 
 
-  async processPreviousCustomerSession(data: {user: User, token: string}): Promise<boolean>{
+  private async processPreviousCustomerSession(data: {user: User, token: string}): Promise<boolean>{
     try {
       const { user, token } = data;
 

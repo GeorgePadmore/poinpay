@@ -26,7 +26,7 @@ export class WalletService {
      * @param data - Object containing the user.
      * @returns Promise<boolean> - True if the wallet exists, otherwise false.
     */
-    async isUserWalletExists(data: {user: User}): Promise<boolean> {
+    public async isUserWalletExists(data: {user: User}): Promise<boolean> {
         const { user } = data;
         const wallet = await this.walletRepository.findUserWallet({user, activeStatus: true});
         return (wallet) ? true: false;
@@ -38,7 +38,7 @@ export class WalletService {
      * @param data - Object containing the user for whom the wallet is being created.
      * @returns Promise<boolean> - True if the wallet creation and transaction log succeed, otherwise false.
     */
-    async createUserWallet(data: { user: User }): Promise<boolean> {
+    public async createUserWallet(data: { user: User }): Promise<boolean> {
         const queryRunner = dataSource.createQueryRunner();
 
         try {
@@ -99,7 +99,7 @@ export class WalletService {
      * @param data - Object containing the user for whom the wallet is being searched.
      * @returns Promise<{responseCode: string, responseDesc: string, balance?: number, currency?: string}> - Balance response if the wallet exists, else RECORD_NOT_FOUND response if the wallet is empty.
     */
-    async getUserBalance(data: {user: User}): Promise<{responseCode: string, responseDesc: string, balance?: number, currency?: string}>{
+    public async getUserBalance(data: {user: User}): Promise<{responseCode: string, responseDesc: string, balance?: number, currency?: string}>{
         const { user } = data;
 
         const wallet = await this.walletRepository.findUserWallet({user, activeStatus: true});
@@ -113,15 +113,15 @@ export class WalletService {
 
 
 
-  async getTransactionHistory(data: {user: User}) {
-    const { user } = data;
+    public async getTransactionHistory(data: {user: User}) {
+        const { user } = data;
 
-    //I need to be sure whether to fetch from wallet Transaction or transaction table.
-    // wallet Transaction shows wallet creation history, account top ups and transfers.
+        //I need to be sure whether to fetch from wallet Transaction or transaction table.
+        // wallet Transaction shows wallet creation history, account top ups and transfers.
 
-    //You can later on get the detailed transaction when you search the transId.
-    // await this.wall
-  }
+        //You can later on get the detailed transaction when you search the transId.
+        // await this.wall
+    }
 
 
 
@@ -130,7 +130,7 @@ export class WalletService {
     * Generates a unique transaction ID.
     * @returns Promise<string> - The generated transaction ID.
     */
-    async generateTransactionId(codeLength = 12): Promise<string> {
+    private async generateTransactionId(codeLength = 12): Promise<string> {
         let code = '';
   
         do {

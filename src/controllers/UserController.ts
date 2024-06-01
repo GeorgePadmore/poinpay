@@ -6,7 +6,7 @@ export class UserController {
     
     constructor(private readonly userService: UserService) {}
 
-    async registerUser(request: FastifyRequest, reply: FastifyReply, fastify: FastifyInstance):Promise<any> {
+    public async registerUser(request: FastifyRequest, reply: FastifyReply, fastify: FastifyInstance):Promise<any> {
         const { name, username, email, password } = request.body as {name: string, username: string, email: string, password: string};
         try {
 
@@ -20,7 +20,7 @@ export class UserController {
     }
 
 
-    async verifyEmail(request: FastifyRequest, reply: FastifyReply, fastify: FastifyInstance){
+    public async verifyEmail(request: FastifyRequest, reply: FastifyReply, fastify: FastifyInstance){
       const { token } = request.query as {token: string};
       try {
         const response = await this.userService.verifyEmail(token, fastify);
@@ -31,7 +31,7 @@ export class UserController {
     }
 
     
-    async authenticateUser(request: FastifyRequest, reply: FastifyReply, fastify: FastifyInstance):Promise<any> {
+    public async authenticateUser(request: FastifyRequest, reply: FastifyReply, fastify: FastifyInstance):Promise<any> {
         const { username, password } = request.body as {username: string, password: string};
         try {
           const response = await this.userService.signInUser({username, password}, fastify);
