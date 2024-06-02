@@ -1,7 +1,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { WalletService } from '../services/WalletService';
-import { JwtPayload } from '../utils/Interfaces';
 import { UserService } from '../services/UserService';
+import { NotificationService } from '../services/NotificationService';
+import { JwtPayload } from '../utils/Interfaces';
 import { ACCOUNT_TOPUP_FAILED, TRANSACTION_FAILED } from '../utils/Constant';
 
 export class WalletController {
@@ -10,8 +11,10 @@ export class WalletController {
     constructor() {
         this.walletService = new WalletService();
         const userService = new UserService();
+        const notificationService = new NotificationService();
 
         this.walletService.setUserService(userService); //set dependency
+        this.walletService.setNotificationService(notificationService);
     }
 
     public async checkBalance(request: FastifyRequest, reply: FastifyReply) {

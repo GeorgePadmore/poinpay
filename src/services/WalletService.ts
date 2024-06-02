@@ -10,6 +10,8 @@ import { WalletTransType, currentDateTime } from '../utils/util';
 import { dataSource } from '../utils/database/DataSource';
 import { Wallet } from '../models/Wallet';
 import { Transaction } from '../models/Transaction';
+import { Notifications } from 'models/Notification';
+import { NotificationService } from './NotificationService';
 
 export class WalletService {
 
@@ -18,6 +20,7 @@ export class WalletService {
     private readonly transactionRepository: TransactionRepository;
     private readonly notificationsRepository: NotificationsRepository;
     private userService: UserService | undefined;
+    private notificationService: NotificationService | undefined;
 
     constructor() {
         this.walletTransactionRepository = new WalletTransactionRepository();
@@ -29,6 +32,11 @@ export class WalletService {
     // Method to set UserService
     public setUserService(userService: UserService) {
         this.userService = userService;
+    }
+
+    // Method to set NotificationService
+    public setNotificationService(notificationService: NotificationService) {
+        this.notificationService = notificationService;
     }
 
     public async isUserWalletExists(data: { userId: number }): Promise<boolean> {
@@ -178,21 +186,9 @@ export class WalletService {
             const senderMessage = `Your transfer of ${debitResult.data.currency} ${amount} has been sent to ${recipientDetails.data.name} successfully.\n${debitResult.data.currency} ${amount} was deducted.\nYour PoinPay Balance: ${senderWallet.currency} ${debitResult.data.balance} .\nTime: ${currentDateTime()}\nTransactionId: ${transactionId}`;
             const receiverMessage = `You have received ${creditResult.data.currency} ${amount} from ${senderDetails.data.name}.\nYour PoinPay Balance: ${creditResult.data.currency} ${creditResult.data.balance}.\nTime: ${currentDateTime()}\nTransactionId: ${transactionId}`;
 
-            // Create and save notifications
-            await Promise.all([
-                this.notificationsRepository.createTransactionEntity({
-                    user: { id: senderId } as User,
-                    message: senderMessage,
-                    status: "S",
-                    read: false,
-                }),
-                this.notificationsRepository.createTransactionEntity({
-                    user: { id: recipientId } as User,
-                    message: receiverMessage,
-                    status: "S",
-                    read: false,
-                })
-            ].map(notification => queryRunner.manager.save(notification)));
+            // send notifications
+            this.notificationService.processNotification({userId: senderId, message: senderMessage});
+            this.notificationService.processNotification({userId: recipientId, message: receiverMessage});
 
             await queryRunner.commitTransaction();
             return TRANSACTION_COMPLETE;
