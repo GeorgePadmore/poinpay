@@ -5,6 +5,9 @@ import { NotificationService } from '../services/NotificationService';
 import { JwtPayload } from '../utils/Interfaces';
 import { ACCOUNT_TOPUP_FAILED, TRANSACTION_FAILED } from '../utils/Constant';
 
+/**
+ * Controller class for handling wallet-related routes and requests.
+ */
 export class WalletController {
     private walletService: WalletService;
 
@@ -17,6 +20,12 @@ export class WalletController {
         this.walletService.setNotificationService(notificationService);
     }
 
+
+    /**
+     * Route handler for checking the user's wallet balance.
+     * @param {FastifyRequest} request - The request object.
+     * @param {FastifyReply} reply - The reply object.
+     */
     public async checkBalance(request: FastifyRequest, reply: FastifyReply) {
         try {
             const userId = (request.user as JwtPayload).userId; // Extract userId from the JWT token        
@@ -28,7 +37,12 @@ export class WalletController {
         }
     }
 
-
+    
+    /**
+     * Route handler for retrieving the user's transaction history.
+     * @param {FastifyRequest} request - The request object.
+     * @param {FastifyReply} reply - The reply object.
+     */
     public async getTransactionHistory(request: FastifyRequest, reply: FastifyReply) {
         try {
             const userId = (request.user as JwtPayload).userId; // Extract userId from the JWT token        
@@ -41,6 +55,11 @@ export class WalletController {
     }
 
 
+    /**
+     * Route handler for topping up the user's wallet balance.
+     * @param {FastifyRequest} request - The request object.
+     * @param {FastifyReply} reply - The reply object.
+     */
     public async topUpBalance(request: FastifyRequest, reply: FastifyReply) {
         try {
             const userId = (request.user as JwtPayload).userId; // Extract userId from the JWT token     
@@ -55,6 +74,11 @@ export class WalletController {
     }
 
     
+    /**
+     * Route handler for transferring money from one user's wallet to another.
+     * @param {FastifyRequest} request - The request object.
+     * @param {FastifyReply} reply - The reply object.
+     */
     public async transferMoney(request: FastifyRequest, reply: FastifyReply) {
         try {
             const senderId = (request.user as JwtPayload).userId; // Extract userId from the JWT token     

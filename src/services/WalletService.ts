@@ -3,48 +3,71 @@ import { WalletTransaction } from '../models/WalletTransaction';
 import { WalletRepository } from '../repositories/WalletRepository';
 import { TransactionRepository } from '../repositories/TransactionRepository';
 import { WalletTransactionRepository } from '../repositories/WalletTransactionRepository';
-import { NotificationsRepository } from '../repositories/NotificationRepository';
 import { RECORD_NOT_FOUND, SUCCESS, ACCOUNT_TOPUP_SUCCESS, ACCOUNT_TOPUP_FAILED, TRANSACTION_HISTORY_FOUND, TRANSACTION_COMPLETE, TRANSACTION_FAILED, DUPLICATE_TRANSACTION, INSUFFICIENT_BALANCE, RECIPIENT_NOT_FOUND } from '../utils/Constant';
 import { UserService } from './UserService';
 import { WalletTransType, currentDateTime } from '../utils/util';
 import { dataSource } from '../utils/database/DataSource';
 import { Wallet } from '../models/Wallet';
 import { Transaction } from '../models/Transaction';
-import { Notifications } from 'models/Notification';
 import { NotificationService } from './NotificationService';
 
+/**
+ * Service class to handle wallet-related operations.
+ */
 export class WalletService {
 
     private readonly walletRepository: WalletRepository;
     private readonly walletTransactionRepository: WalletTransactionRepository;
     private readonly transactionRepository: TransactionRepository;
-    private readonly notificationsRepository: NotificationsRepository;
     private userService: UserService | undefined;
     private notificationService: NotificationService | undefined;
 
+    /**
+     * Constructor to initialize the WalletService.
+     */
     constructor() {
         this.walletTransactionRepository = new WalletTransactionRepository();
         this.walletRepository = new WalletRepository();
         this.transactionRepository = new TransactionRepository();
-        this.notificationsRepository = new NotificationsRepository();
     }
 
-    // Method to set UserService
+    /**
+     * Sets the UserService dependency for the WalletService.
+     * @param {UserService} userService - The UserService instance to be set.
+     */
     public setUserService(userService: UserService) {
         this.userService = userService;
     }
 
-    // Method to set NotificationService
+    
+    /**
+     * Sets the NotificationService dependency for the WalletService.
+     * @param {NotificationService} notificationService - The NotificationService instance to be set.
+     */
     public setNotificationService(notificationService: NotificationService) {
         this.notificationService = notificationService;
     }
 
+
+    /**
+     * Checks if a wallet exists for a user.
+     * @param {Object} data - The data object containing the user ID.
+     * @param {number} data.userId - The ID of the user.
+     * @returns {Promise<boolean>} A promise representing whether the wallet exists or not.
+     */
     public async isUserWalletExists(data: { userId: number }): Promise<boolean> {
         const { userId } = data;
         const wallet = await this.walletRepository.findUserWalletByUserId(userId);
         return (wallet) ? true : false;
     }
 
+
+    /**
+     * Creates a wallet for a user.
+     * @param {Object} data - The data object containing the user object.
+     * @param {User} data.user - The user for whom the wallet is created.
+     * @returns {Promise<boolean>} A promise representing the success or failure of wallet creation.
+     */
     public async createUserWallet(data: { user: User }): Promise<boolean> {
         try {
             const { user } = data;
@@ -66,6 +89,13 @@ export class WalletService {
         }
     }
 
+
+    /**
+     * Retrieves the balance of a user's wallet.
+     * @param {Object} data - The data object containing the user ID.
+     * @param {number} data.userId - The ID of the user.
+     * @returns {Promise<{responseCode: string, responseDesc: string, responseData?: { balance: number, currency: string }}>} A promise representing the balance response.
+     */
     public async getUserBalance(data: { userId: number }): Promise<{ responseCode: string, responseDesc: string, responseData?: { balance: number, currency: string } }> {
         if (!this.userService) throw new Error("UserService not set");
 
@@ -78,6 +108,15 @@ export class WalletService {
         return RECORD_NOT_FOUND;
     }
 
+
+
+    /**
+     * Tops up the balance of a user's wallet.
+     * @param {Object} data - The data object containing the user ID and amount to be topped up.
+     * @param {number} data.userId - The ID of the user.
+     * @param {number} data.amount - The amount to be topped up.
+     * @returns {Promise<{responseCode: string, responseDesc: string, responseData?: { balance: number, currency: string }}>} A promise representing the top-up response.
+     */
     public async topUpBalance(data: { userId: number, amount: number }): Promise<{ responseCode: string, responseDesc: string, responseData?: { balance: number, currency: string } }> {
         try {
             const { userId, amount } = data;
@@ -109,6 +148,16 @@ export class WalletService {
         }
     }
 
+
+    /**
+     * Transfers money from one user's wallet to another.
+     * @param {Object} data - The data object containing sender ID, recipient ID, idempotency key, and amount.
+     * @param {number} data.senderId - The ID of the sender.
+     * @param {string} data.idempotencyKey - The idempotency key for the transaction.
+     * @param {number} data.recipientId - The ID of the recipient.
+     * @param {number} data.amount - The amount to be transferred.
+     * @returns {Promise<string>} A promise representing the result of the transfer operation.
+     */
     public async transferMoney(data: { senderId: number, idempotencyKey: string, recipientId: number, amount: number }) {
         const queryRunner = dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -202,6 +251,16 @@ export class WalletService {
         }
     }
 
+
+    /**
+     * Adjusts the balance of a user's wallet based on a given transaction.
+     * @param {Object} data - The data object containing user details, transaction amount, ID, and type.
+     * @param {User} data.user - The user for whom the wallet balance is adjusted.
+     * @param {number} data.amount - The amount by which the wallet balance is adjusted.
+     * @param {string} data.transactionId - The ID of the transaction.
+     * @param {WalletTransType} data.transType - The type of transaction.
+     * @returns {Promise<{ status: boolean, data?: { balance: number, currency: string } }>} A promise representing the result of the adjustment operation.
+     */
     public async adjustWallet(data: { user: User, amount: number, transactionId: string, transType: WalletTransType }): Promise<{ status: boolean, data?: { balance: number, currency: string } }> {
         const queryRunner = dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -259,7 +318,14 @@ export class WalletService {
     }
 
 
-    //Transaction History
+    /**
+     * Retrieves the transaction history for a specific user.
+     * @param {Object} data - The data object containing the user ID, page number, and limit.
+     * @param {number} data.userId - The ID of the user for whom the transaction history is retrieved.
+     * @param {number} [data.page] - The page number for pagination (optional).
+     * @param {number} [data.limit] - The limit of transactions per page (optional).
+     * @returns {Promise<{responseCode: string, responseDesc: string, data?: WalletTransaction[], totalNumberOfRecords?: number, pageSize?: number, currentPage?: number }>} A promise representing the result of the transaction history retrieval.
+     */
     public async getTransactionHistoryList(data: {userId: number, page?: number, limit?: number}): Promise<{responseCode: string, responseDesc: string, data?: WalletTransaction[], totalNumberOfRecords?: number, pageSize?: number, currentPage?: number }>{
         const { userId, page, limit } = data;
 
@@ -278,6 +344,15 @@ export class WalletService {
     }
 
 
+    /**
+     * Processes the transaction type operation to calculate the new gross balance and new net balance.
+     * @param {Object} data - The data object containing the transaction type, gross balance, net balance, and amount.
+     * @param {WalletTransType} data.transType - The type of transaction.
+     * @param {number} data.grossBal - The current gross balance.
+     * @param {number} data.netBal - The current net balance.
+     * @param {number} data.amount - The transaction amount.
+     * @returns {Object} An object containing the new gross balance and new net balance.
+     */
     private processTransTypeOperation(data: { transType: WalletTransType, grossBal: number, netBal: number, amount: number }): { newGrossBal: number, newNetBal: number } {
         const { transType, grossBal, netBal, amount } = data;
 
@@ -294,11 +369,22 @@ export class WalletService {
 
 
 
+    /**
+     * Checks if a transaction with the given idempotency key already exists.
+     * @param {string} idempotencyKey - The idempotency key to check.
+     * @returns {Promise<boolean>} A boolean indicating whether a transaction with the key exists.
+     */
     private async checkIdempotencyExists(idempotencyKey: string): Promise<boolean> {
         const IdempotencyExists = await this.transactionRepository.findTransactionDetails({ idempotencyKey });
         return (IdempotencyExists) ? true : false;
     }
 
+
+    /**
+     * Generates a random transaction ID of the specified length.
+     * @param {number} [codeLength=12] - The length of the generated transaction ID.
+     * @returns {Promise<string>} The generated transaction ID.
+     */
     private async generateTransactionId(codeLength = 12): Promise<string> {
         let code;
         do {
@@ -307,6 +393,10 @@ export class WalletService {
         return code;
     }
 
+    /**
+     * Generates a transaction ID for transfer transactions.
+     * @returns {Promise<string>} The generated transaction ID for transfer transactions.
+     */
     private async generateTransferTransactionId(): Promise<string> {
         return await this.generateTransactionId();
     }
