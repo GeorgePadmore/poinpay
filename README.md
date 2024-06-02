@@ -2,7 +2,7 @@
 
 ## Overview
 
-This Node.js & typescript application implements a wallet system that allows users to manage their account balances, perform transactions (such as topping up balance and transferring funds), and view transaction history. The system ensures data integrity, reliability, and consistency through various design choices.
+This Node.js & typescript application implements a wallet system that facilitates financial transactions between users on the system. Users can perform functionalities such as manage their account balances, perform transactions (such as topping up balance and transferring funds), and view transaction history. The system ensures data integrity, reliability, and consistency through various design choices.
 
 ## Design Choices
 
