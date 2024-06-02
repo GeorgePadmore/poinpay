@@ -72,7 +72,7 @@ export class UserService {
 
       const update = await this.userRepository.updateUser({id: user.id}, {emailVerified: true});
       if (update) {
-        if (!(await this.walletService.isUserWalletExists({ user }))) {
+        if (!(await this.walletService.isUserWalletExists({ userId: user.id }))) {
           await this.walletService.createUserWallet({ user });
         }
         await queryRunner.commitTransaction();
@@ -117,6 +117,18 @@ export class UserService {
       return RECORD_NOT_FOUND;
     }
   }
+
+
+  public async getUserDetailsByName(name: string): Promise<{responseCode: string, responseDesc: string, data?: User}> {
+    try {
+      const user = await this.userRepository.findUserInfo({ name, activeStatus: true });
+      if (!user) return RECORD_NOT_FOUND;
+      return {...SUCCESS, data: user};
+    } catch (error) {
+      return RECORD_NOT_FOUND;
+    }
+  }
+
 
   private async processPreviousCustomerSession(data: {user: User, token: string}): Promise<boolean> {
     try {

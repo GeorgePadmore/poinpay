@@ -49,10 +49,10 @@ export class Transaction {
     @Length(1, 255)
     src: string;
 
-    @Column({ nullable: false })
+    @Column({ nullable: true, default: null })
     @IsNotEmpty()
     @Length(1, 255)
-    status: string;
+    status: boolean;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;

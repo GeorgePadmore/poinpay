@@ -1,7 +1,8 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { UserService } from "../services/UserService";
-import { SUCCESS, FAILURE, USER_CREATION_FAILED, EMAIL_VERIFY_FAILED, LOGIN_FAILED } from "../utils/Constant";
+import { SUCCESS, FAILURE, USER_CREATION_FAILED, EMAIL_VERIFY_FAILED, LOGIN_FAILED, NAME_MISSING } from "../utils/Constant";
 import { WalletService } from '../services/WalletService';
+import { JwtPayload } from '../utils/Interfaces';
 
 export class UserController {
     
@@ -43,6 +44,23 @@ export class UserController {
         } catch (error) {
           reply.status(400).send(LOGIN_FAILED);
         }
+    }
+
+
+    public async getUser(request: FastifyRequest, reply: FastifyReply) {
+      try {
+          // const userId = (request.user as JwtPayload).userId; // Extract userId from the JWT token  
+          const { name } = request.query as {name: string};
+          if (name && name != undefined) {
+            const userResponse = await this.userService.getUserDetailsByName(name);
+            return reply.send(userResponse);
+          }  
+          return reply.send(NAME_MISSING);    
+          
+      } catch (error) {
+          console.error(error);
+          reply.status(500).send({ message: 'Failed to retrieve User' });
+      }
     }
 
 

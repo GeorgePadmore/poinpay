@@ -18,5 +18,9 @@ export function WalletRoutes(fastify: FastifyInstance, opts: any, done: () => vo
         return await walletController.topUpBalance(request, reply);
     });
 
+    fastify.post('/transferMoney', { preHandler: [jwtAuthMiddleware] }, async (request, reply) => {
+        return await walletController.transferMoney(request, reply);
+    });
+
     done();
 }

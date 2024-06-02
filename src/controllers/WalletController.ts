@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { WalletService } from '../services/WalletService';
 import { JwtPayload } from '../utils/Interfaces';
 import { UserService } from '../services/UserService';
-import { ACCOUNT_TOPUP_FAILED } from '../utils/Constant';
+import { ACCOUNT_TOPUP_FAILED, TRANSACTION_FAILED } from '../utils/Constant';
 
 export class WalletController {
     private walletService: WalletService;
@@ -48,6 +48,20 @@ export class WalletController {
         } catch (error) {
             console.error(error);
             reply.status(500).send(ACCOUNT_TOPUP_FAILED);
+        }
+    }
+
+    
+    public async transferMoney(request: FastifyRequest, reply: FastifyReply) {
+        try {
+            const senderId = (request.user as JwtPayload).userId; // Extract userId from the JWT token     
+            const { idempotencyKey, recipientId, amount } = request.body as { idempotencyKey: string, amount: number, recipientId: number}
+
+            const transferResponse = await this.walletService.transferMoney({ senderId, idempotencyKey, recipientId, amount });
+            reply.send(transferResponse);
+        } catch (error) {
+            console.error(error);
+            reply.status(500).send(TRANSACTION_FAILED);
         }
     }
 }

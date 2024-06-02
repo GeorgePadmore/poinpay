@@ -22,6 +22,16 @@ export class UserRepository{
           }
         });
     }
+
+    public async findUserInfo(where: Partial<User>): Promise<User | undefined> {
+        return await this.userRepository.findOne({
+          where: {
+            delStatus: false,
+            ...where
+          },
+          select: ["id", "name"]
+        });
+    }
     
     public async updateUser(where: Partial<User>, data: Partial<User>): Promise<User | undefined> {
         await this.userRepository.update(where, data);

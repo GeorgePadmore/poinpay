@@ -6,6 +6,7 @@ import { User } from "../models/User";
 import { UserRepository } from '../repositories/UserRepository';
 import { SignupSchema } from "../../schemas/SignupSchema";
 import { LoginSchema } from "../../schemas/LoginSchema";
+import { jwtAuthMiddleware } from "../middlewares/jwtAuthMiddleware";
 
 
 export function UserRoutes(fastify: FastifyInstance, opts: any, done: () => void) {
@@ -30,6 +31,12 @@ export function UserRoutes(fastify: FastifyInstance, opts: any, done: () => void
         return await userController.authenticateUser(request, reply, fastify);
     });
     
+
+
+    fastify.get('/getContact', { preHandler: [jwtAuthMiddleware] }, async (request, reply) => {
+        return await userController.getUser(request, reply);
+    });
+
 
     done();
 }

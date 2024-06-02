@@ -16,7 +16,7 @@ export class Notifications {
     @Length(1, 255)
     message: string;
 
-    @Column({ nullable: false })
+    @Column({ nullable: true, default: null })
     @IsNotEmpty()
     @IsBoolean()
     read: boolean;
