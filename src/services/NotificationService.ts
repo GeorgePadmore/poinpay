@@ -1,6 +1,8 @@
 import { User } from '../models/User';
 import { NotificationsRepository } from '../repositories/NotificationRepository';
 import { dataSource } from '../utils/database/DataSource';
+import { sendEmail } from '../utils/EmailService';
+
 
 /**
  * Service class to handle notifications.
@@ -24,13 +26,13 @@ export class NotificationService {
      * @param {string} data.message - The message content of the notification.
      * @returns {Promise<boolean>} A promise indicating whether the notification was processed successfully.
      */
-    public async processNotification(data: { userId: number, message: string }): Promise<boolean> {
+    public async processNotification(data: { userId: number, message: string, subject: string, email?: string }): Promise<boolean> {
         const queryRunner = dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
         try {
-            const { userId, message } = data;
+            const { userId, message, subject, email } = data;
 
             // Create a notification entity
             const notificationEntity = this.notificationsRepository.createTransactionEntity({
@@ -44,6 +46,8 @@ export class NotificationService {
             await queryRunner.manager.save(notificationEntity);
 
             //Send real-time notification
+            await sendEmail({to: email, subject, textBody: message, htmlBody: message});
+
 
             //Commit the transcation
             await queryRunner.commitTransaction();

@@ -1,26 +1,33 @@
-import nodemailer from 'nodemailer';
+import axios from 'axios';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-export async function sendVerificationEmail(email: string, token: string) {
-//   const transporter = nodemailer.createTransport({
-//     host: process.env.SMTP_HOST,
-//     port: Number(process.env.SMTP_PORT),
-//     secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
-//     auth: {
-//       user: process.env.SMTP_USER,
-//       pass: process.env.SMTP_PASS,
-//     },
-//   });
+const API_URL = 'https://api.postmarkapp.com/email';
+const SERVER_TOKEN = process.env.EMAIL_API_KEY; // Replace with your Postmark server token
+const EMAIL_FROM = process.env.EMAIL_FROM; // Replace with your Postmark server token
 
-    const verificationUrl = `${process.env.APPLICATION_URL}/verify-email?token=${token}`;
-    console.log(verificationUrl);
-    
-    // return verificationUrl;
-//   await transporter.sendMail({
-//     from: '"Your App Name" <no-reply@yourapp.com>',
-//     to: email,
-//     subject: 'Email Verification',
-//     html: `Please verify your email by clicking on the following link: <a href="${verificationUrl}">Verify Email</a>`,
-//   });
+export async function sendEmail(data: {to: string, subject: string, textBody: string, htmlBody: string}) {
+    try {
+        const {to, subject, textBody, htmlBody} = data;
+
+        const response = await axios.post(API_URL, {
+            From: EMAIL_FROM,
+            To: to,
+            Subject: subject,
+            TextBody: textBody,
+            HtmlBody: htmlBody,
+            MessageStream: 'outbound'
+        }, {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Postmark-Server-Token': SERVER_TOKEN
+            }
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Error sending email:', error);
+        throw error;
+    }
 }

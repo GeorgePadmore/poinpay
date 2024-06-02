@@ -232,12 +232,12 @@ export class WalletService {
             // Update transaction status to complete
             await queryRunner.manager.getRepository(Transaction).update({ transactionId }, { status: true });
 
-            const senderMessage = `Your transfer of ${debitResult.data.currency} ${amount} has been sent to ${recipientDetails.data.name} successfully.\n${debitResult.data.currency} ${amount} was deducted.\nYour PoinPay Balance: ${senderWallet.currency} ${debitResult.data.balance} .\nTime: ${currentDateTime()}\nTransactionId: ${transactionId}`;
-            const receiverMessage = `You have received ${creditResult.data.currency} ${amount} from ${senderDetails.data.name}.\nYour PoinPay Balance: ${creditResult.data.currency} ${creditResult.data.balance}.\nTime: ${currentDateTime()}\nTransactionId: ${transactionId}`;
+            const senderMessage = `Your transfer of ${debitResult.data.currency} ${amount} has been sent to ${recipientDetails.data.name} successfully.<br>${debitResult.data.currency} ${amount} was deducted.<br>Your PoinPay Balance: ${senderWallet.currency} ${debitResult.data.balance} .<br><br>Time: ${currentDateTime()}<br>TransactionId: ${transactionId}`;
+            const receiverMessage = `You have received ${creditResult.data.currency} ${amount} from ${senderDetails.data.name}.<br>Your PoinPay Balance: ${creditResult.data.currency} ${creditResult.data.balance}.<br><br>Time: ${currentDateTime()}<br>TransactionId: ${transactionId}`;
 
             // send notifications
-            this.notificationService.processNotification({userId: senderId, message: senderMessage});
-            this.notificationService.processNotification({userId: recipientId, message: receiverMessage});
+            this.notificationService.processNotification({userId: senderId, message: senderMessage, email: senderDetails.data.email, subject: "Funds Transfer"});
+            this.notificationService.processNotification({userId: recipientId, message: receiverMessage, email: recipientDetails.data.email, subject: "Funds Received"});
 
             await queryRunner.commitTransaction();
             return TRANSACTION_COMPLETE;

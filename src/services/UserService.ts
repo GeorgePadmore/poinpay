@@ -2,7 +2,7 @@ import { UserRepository } from '../repositories/UserRepository';
 import { UserAuthSessionRepository } from '../repositories/UserAuthSessionRepository';
 import { WalletRepository } from '../repositories/WalletRepository';
 import { hashString, verifyHashedString, currentDateTime } from "../utils/util";
-import { sendVerificationEmail } from '../utils/EmailService';
+import { sendEmail } from '../utils/EmailService';
 import { SUCCESS, FAILURE, USER_CREATION_FAILED, USER_CREATION_SUCCESS, USERNAME_EXISTS, EMAIL_EXISTS, RECORD_NOT_FOUND, EMAIL_ALREADY_VERIFIED, EMAIL_VERIFY_FAILED, EMAIL_VERIFY_SUCCESS, INVALID_VERIFY_TOKEN, ACCOUNT_UNVERIFIED, WRONG_LOGIN_CREDENTIALS, LOGIN_SUCCESS, LOGIN_FAILED } from "../utils/Constant";
 import { WalletService } from './WalletService';
 import { FastifyInstance } from 'fastify';
@@ -60,7 +60,10 @@ export class UserService {
       const user = await this.userRepository.saveUser(userData);
 
       const verificationToken = this.generateEmailVerificationToken(user, fastify);
-      await sendVerificationEmail(user.email, verificationToken);
+      const verificationUrl = `${process.env.APPLICATION_URL}/verify-email?token=${verificationToken}`;
+      const msg = `<h1>Verify your email</h1><br>Use the link below to verify your email.<br>${verificationUrl}`;
+      
+      await sendEmail({to: user.email, subject: "Verify Email", textBody: msg, htmlBody: msg});
 
       return USER_CREATION_SUCCESS;
     } catch (error) {

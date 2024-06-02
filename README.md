@@ -43,6 +43,12 @@ Notifications regarding transaction status are sent asynchronously to users invo
 
     Replace `your_database_username`, `your_database_password`, and `your_database_name` with your actual database credentials.
 
+4. **Setting up email service**: Postmark is being used as the SMS gateway. Update your `.env`file and add the following values. Customize it with your own email API.
+```dotenv
+
+    EMAIL_FROM="info@poinpay.com"
+    EMAIL_API_KEY="YOUR EMAIL API KEY"
+ ```
 
 3. **Start the Application**: You have two options to start the application:
 
